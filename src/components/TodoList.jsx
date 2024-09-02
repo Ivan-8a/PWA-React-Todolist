@@ -6,144 +6,94 @@ import { v4 as uuidv4 } from 'uuid';
 
 function TodoList({ user }) {
   const [todos, setTodos] = useState([]);
-  const [offlineQueue, setOfflineQueue] = useState([]);
-
   useEffect(() => {
-    const storedTodos = JSON.parse(localStorage.getItem("todos")) || [];
-    if (storedTodos.length > 0) {
-      setTodos(storedTodos);
-    } else {
-      const fetchTodos = async () => {
-        const q = query(collection(db, "todos"), where("userId", "==", user.uid));
-        const querySnapshot = await getDocs(q);
-        const todosData = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
-        setTodos(todosData);
-        localStorage.setItem("todos", JSON.stringify(todosData));
-      };
-      fetchTodos();
-    }
+    const fetchTodos = async () => {
+      const q = query(collection(db, "todos"), where("userId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      console.log(querySnapshot.docs)
+      const todosData = querySnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      console.log(todosData)
+      setTodos(todosData);
+    };
+    fetchTodos();
   }, [user]);
 
   const addTodo = async (text) => {
-    const temporaryId = uuidv4();  // ID temporal para el nuevo todo
-    const newTodo = { text, isComplete: false, userId: user.uid, id: temporaryId };
+    const newTodo = { text, isComplete: false, userId: user.uid };
+    const docRef = await addDoc(collection(db, "todos"), newTodo);
+    const newTodoWithId = { ...newTodo, id: docRef.id };
 
-    // Actualizar localmente primero
-    const updatedTodos = [...todos, newTodo];
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    // Agregar el nuevo todo al estado actual
+    setTodos([...todos, newTodoWithId]);
 
-    // Intentar sincronizar con Firestore
-    try {
-      const docRef = await addDoc(collection(db, "todos"), newTodo);
-      const newTodoWithId = { ...newTodo, id: docRef.id };
-      
-      // Reemplazar el todo con el ID temporal con el ID real de Firestore
-      const syncedTodos = updatedTodos.map(todo => 
-        todo.id === temporaryId ? newTodoWithId : todo
-      );
-      setTodos(syncedTodos);
-      localStorage.setItem("todos", JSON.stringify(syncedTodos));
+    // Guardar en localStorage
+    const storedTodos = JSON.parse(localStorage.getItem("todos")) || [];
+    storedTodos.push(newTodoWithId);
+    localStorage.setItem("todos", JSON.stringify(storedTodos));
 
-      console.log(`Document added: ${newTodo.text}, ID: ${docRef.id}`);
-    } catch (error) {
-      console.error("Error adding document: ", error);
-      
-      // Si falla, almacenar en la cola para reintento
-      setOfflineQueue([...offlineQueue, newTodo]);
-      console.log("Document added to offline queue");
-    }
-  };
+    console.log(`document added: ${newTodo.text}, ID: ${docRef.id}`);
+};
+
 
   const deleteTodo = async (index) => {
     const toDelete = todos[index];
-    const updatedTodos = todos.filter((_, i) => i !== index);
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
-
-    try {
-      await deleteDoc(doc(db, "todos", toDelete.id));
-      console.log("Document deleted");
-    } catch (error) {
-      console.error("Error deleting document: ", error);
-      // Manejar el error si es necesario
-    }
+    await deleteDoc(doc(db, "todos", toDelete.id));
+    setTodos(todos.filter((_, i)=> i !== index));
+    console.log("document deleted")
   };
 
   const completeTodo = async (index) => {
-    const updatedTodo = { ...todos[index], isComplete: !todos[index].isComplete };
+    const updatedTodo = {...todos[index], isComplete: !todos[index].isComplete};
+    await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo)
     const newTodos = [...todos];
-    newTodos[index] = updatedTodo;
+    newTodos[index] = updatedTodo
     setTodos(newTodos);
-    localStorage.setItem("todos", JSON.stringify(newTodos));
-
-    try {
-      await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo);
-      console.log(`Document updated, isComplete: ${newTodos[index].isComplete}`);
-    } catch (error) {
-      console.error("Error updating document: ", error);
-      // Manejar el error si es necesario
-    }
+    console.log(`document updated, isComplete: ${newTodos[index].isComplete}`);
   };
 
   const editTodo = async (index, newText) => {
-    const updatedTodo = { ...todos[index], text: newText };
+    const updatedTodo = {...todos[index], text: newText};
+    await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo)
     const newTodos = [...todos];
-    newTodos[index] = updatedTodo;
+    newTodos[index] = updatedTodo
     setTodos(newTodos);
-    localStorage.setItem("todos", JSON.stringify(newTodos));
-
-    try {
-      await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo);
-      console.log(`Document edited, ID: ${updatedTodo.id}`);
-    } catch (error) {
-      console.error("Error editing document: ", error);
-      // Manejar el error si es necesario
-    }
+    console.log(`document edited, ID: ${updatedTodo.id}`)
   };
 
   const [inputText, setInputText] = useState("");
 
   return (
-    <div className="app-container">
-      <div className="todo-list">
-        <h2>Todolist App</h2>
-        <input className="task-input"
-          type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+    <>
+      <h2>Todolist App</h2>
+      <input
+        type="text"
+        value={inputText}
+        onChange={(e) => setInputText(e.target.value)}
+      />
+      <button
+        onClick={() => {
+          if (inputText.trim()) {
+            addTodo(inputText);
+            setInputText("");
+          }
+        }}
+      >
+        ADD task
+      </button>
+      {todos.map((todo, index) => (
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          index={index}
+          completeTodo={completeTodo}
+          deleteTodo={deleteTodo}
+          editTodo={editTodo}
         />
-        <button className="add-task-button"
-          onClick={() => {
-            if (inputText.trim()) {
-              addTodo(inputText);
-              setInputText("");
-            }
-          }}
-        >
-          ADD task
-        </button>
-        {todos.map((todo, index) => (
-          <div key={todo.id} className="todo-item">
-            <div className="task">
-              <input
-                type="checkbox"
-                checked={todo.isComplete}
-                onChange={() => completeTodo(index)}
-              />
-              <span>{todo.text}</span>
-            </div>
-            <div className="buttons">
-              <button onClick={() => editTodo(index, "New text here")}>Edit</button>
-              <button onClick={() => deleteTodo(index)}>Delete</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+      ))}
+    </>
   );
 }
 
