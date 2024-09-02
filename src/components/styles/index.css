@@ -1,0 +1,209 @@
+.contenedor {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  margin: 0 auto;
+  max-width: 1200px;
+  width: 100%;
+}
+
+.todo-list {
+  width: 100%;
+  max-width: 500px;
+  background-color: #f8f8f8;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+}
+
+.agregar-tarea-input {
+  width: 95%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+}
+
+.agregar-tarea {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.agregar-tarea:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .contenedor {
+    padding: 10px;
+  }
+
+  .todo-list {
+    max-width: 100%;
+  }
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+span {
+  flex-grow: 1;
+  padding: 5px;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.edit-input {
+  flex-grow: 1;
+  padding: 5px;
+  margin-right: 10px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.delete-btn,
+.edit-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.edit-btn {
+  background-color: #007bff;
+}
+
+.delete-btn:hover {
+  background-color: #e60000;
+}
+
+.edit-btn:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .todo-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .delete-btn,
+  .edit-btn {
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  .edit-input {
+    width: 100%;
+  }
+}
+
+.login {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.login h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+}
+
+.login input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.login button {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login button:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .login {
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .login h2 {
+    font-size: 22px;
+  }
+
+  .login input {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .login button {
+    padding: 8px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login h2 {
+    font-size: 20px;
+  }
+
+  .login input {
+    padding: 6px;
+    font-size: 12px;
+  }
+
+  .login button {
+    padding: 6px;
+    font-size: 12px;
+  }
+}

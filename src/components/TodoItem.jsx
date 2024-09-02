@@ -14,27 +14,31 @@ function TodoItem ({todo, completeTodo, index, deleteTodo, editTodo}){
 
   return (
     <>
-    <div>
-      <input 
-        type="checkbox"
-        checked={todo.isComplete}
-        onChange={() => completeTodo(index)} 
-      />
-      {isEditing ? (
-        <input 
-          type="text" 
-          value={newText}
-          onChange={(e) => setNewText(e.target.value)}
-        />
-      ): (
-        <>
-          <span>{todo.text}</span>
-          <button onClick={()=> deleteTodo(index)}>Eliminar</button>
-        </>
-      )}
-    <button onClick={handleEdit}>{isEditing ? 'Guardar' : 'Editar'}</button>
-    </div>
-    
+    <div className="todo-item">
+  <input
+    type="checkbox"
+    checked={todo.isComplete}
+    onChange={() => completeTodo(index)}
+  />
+  {isEditing ? (
+    <input
+      type="text"
+      value={newText}
+      onChange={(e) => setNewText(e.target.value)}
+      className="edit-input"
+    />
+  ) : (
+    <>
+      <span className={todo.isComplete ? "completed" : ""}>{todo.text}</span>
+      <button className="delete-btn" onClick={() => deleteTodo(index)}>
+        Eliminar
+      </button>
+    </>
+  )}
+  <button className="edit-btn" onClick={handleEdit}>
+    {isEditing ? "Guardar" : "Editar"}
+  </button>
+  </div>
     </>
   )
 }

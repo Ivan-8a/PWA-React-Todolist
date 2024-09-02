@@ -28,7 +28,7 @@ function App() {
   return <>
     {user ? (
       <>
-        <button className='logout-button' onClick={handleSignOut}>Cerrar sesion</button>
+        <button className='boton-cerrar-sesion' onClick={handleSignOut}>Cerrar sesion</button>
         <TodoList user={user}></TodoList>
       </>
     ):(

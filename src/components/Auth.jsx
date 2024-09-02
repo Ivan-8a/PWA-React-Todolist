@@ -20,27 +20,27 @@ function Auth({setUser}){
     }
 
     return (
-        <div>
-            <h2>{isRegistering ? "Register" : "Login"}</h2>
-            <input 
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-            />
-            <input 
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="password"
-            />
-            <button onClick={login}>
-                {isRegistering ? "Register" : "Login"}
-            </button>
-            <button onClick={() => setIsRegistering(!isRegistering)}>
-                {isRegistering ? "Swich to login" :  "Swich to register"}
-            </button>
-        </div>
+        <div className="login">
+  <h2>{isRegistering ? "Register" : "Login"}</h2>
+  <input
+    type="email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    placeholder="Email"
+  />
+  <input
+    type="password"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    placeholder="Password"
+  />
+  <button onClick={login}>
+    {isRegistering ? "Register" : "Login"}
+  </button>
+  <button onClick={() => setIsRegistering(!isRegistering)}>
+    {isRegistering ? "Login" : "Register"}
+  </button>
+</div>
     )
 };
 

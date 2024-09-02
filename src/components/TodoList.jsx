@@ -114,32 +114,38 @@ function TodoList({ user }) {
 
   return (
     <>
-      <h2>Todolist App</h2>
-      <input
-        type="text"
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
+    <div className="contenedor">
+  <div className="todo-list">
+    <h2>Todolist App</h2>
+    <input
+      className="agregar-tarea-input"
+      type="text"
+      value={inputText}
+      onChange={(e) => setInputText(e.target.value)}
+    />
+    <button
+      className="agregar-tarea"
+      onClick={() => {
+        if (inputText.trim()) {
+          addTodo(inputText);
+          setInputText("");
+        }
+      }}
+    >
+      ADD task
+    </button>
+    {todos.map((todo, index) => (
+      <TodoItem
+        key={todo.id}
+        todo={todo}
+        index={index}
+        completeTodo={completeTodo}
+        deleteTodo={deleteTodo}
+        editTodo={editTodo}
       />
-      <button
-        onClick={() => {
-          if (inputText.trim()) {
-            addTodo(inputText);
-            setInputText("");
-          }
-        }}
-      >
-        ADD task
-      </button>
-      {todos.map((todo, index) => (
-        <TodoItem
-          key={todo.id}
-          todo={todo}
-          index={index}
-          completeTodo={completeTodo}
-          deleteTodo={deleteTodo}
-          editTodo={editTodo}
-        />
-      ))}
+    ))}
+  </div>
+  </div>
     </>
   );
 }
