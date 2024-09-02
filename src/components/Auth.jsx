@@ -20,30 +20,28 @@ function Auth({setUser}){
     }
 
     return (
-        <div className="login-form">
-          <h2>{isRegistering ? "Registrarse" : "Iniciar sesión"}</h2>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Correo electrónico"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Contraseña"   
-    
-          />
-          <button   
-     onClick={login}>
-            {isRegistering ? "Registrarse" : "Iniciar sesión"}
-          </button>
-          <button className="switch-button" onClick={() => setIsRegistering(!isRegistering)}>
-            {isRegistering ? "Iniciar sesión" : "Registrarse"}
-          </button>
+        <div>
+            <h2>{isRegistering ? "Register" : "Login"}</h2>
+            <input 
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+            />
+            <input 
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} 
+                placeholder="password"
+            />
+            <button onClick={login}>
+                {isRegistering ? "Register" : "Login"}
+            </button>
+            <button onClick={() => setIsRegistering(!isRegistering)}>
+                {isRegistering ? "Swich to login" :  "Swich to register"}
+            </button>
         </div>
-      );
+    )
 };
 
 export default Auth

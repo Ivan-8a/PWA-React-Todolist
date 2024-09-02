@@ -6,61 +6,108 @@ import { v4 as uuidv4 } from 'uuid';
 
 function TodoList({ user }) {
   const [todos, setTodos] = useState([]);
+  const [offlineQueue, setOfflineQueue] = useState([]);
+
   useEffect(() => {
+    // Cargar las tareas desde el localStorage basadas en el usuario conectado
+    const storedTodos = JSON.parse(localStorage.getItem(`todos_${user.uid}`)) || [];
+    setTodos(storedTodos);
+
+    // Intentar sincronizar con Firestore
     const fetchTodos = async () => {
       const q = query(collection(db, "todos"), where("userId", "==", user.uid));
       const querySnapshot = await getDocs(q);
-      console.log(querySnapshot.docs)
       const todosData = querySnapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
       }));
-      console.log(todosData)
       setTodos(todosData);
+      localStorage.setItem(`todos_${user.uid}`, JSON.stringify(todosData));
     };
+
     fetchTodos();
   }, [user]);
 
+  const saveTodosToLocalStorage = (todos) => {
+    localStorage.setItem(`todos_${user.uid}`, JSON.stringify(todos));
+  };
+
   const addTodo = async (text) => {
-    const newTodo = { text, isComplete: false, userId: user.uid };
-    const docRef = await addDoc(collection(db, "todos"), newTodo);
-    const newTodoWithId = { ...newTodo, id: docRef.id };
+    const temporaryId = uuidv4();  // ID temporal para el nuevo todo
+    const newTodo = { text, isComplete: false, userId: user.uid, id: temporaryId };
 
-    // Agregar el nuevo todo al estado actual
-    setTodos([...todos, newTodoWithId]);
+    // Actualizar localmente primero
+    const updatedTodos = [...todos, newTodo];
+    setTodos(updatedTodos);
+    saveTodosToLocalStorage(updatedTodos);
 
-    // Guardar en localStorage
-    const storedTodos = JSON.parse(localStorage.getItem("todos")) || [];
-    storedTodos.push(newTodoWithId);
-    localStorage.setItem("todos", JSON.stringify(storedTodos));
+    // Intentar sincronizar con Firestore
+    try {
+      const docRef = await addDoc(collection(db, "todos"), newTodo);
+      const newTodoWithId = { ...newTodo, id: docRef.id };
+      
+      // Reemplazar el todo con el ID temporal con el ID real de Firestore
+      const syncedTodos = updatedTodos.map(todo => 
+        todo.id === temporaryId ? newTodoWithId : todo
+      );
+      setTodos(syncedTodos);
+      saveTodosToLocalStorage(syncedTodos);
 
-    console.log(`document added: ${newTodo.text}, ID: ${docRef.id}`);
-};
-
+      console.log(`Document added: ${newTodo.text}, ID: ${docRef.id}`);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      
+      // Si falla, almacenar en la cola para reintento
+      setOfflineQueue([...offlineQueue, newTodo]);
+      console.log("Document added to offline queue");
+    }
+  };
 
   const deleteTodo = async (index) => {
     const toDelete = todos[index];
-    await deleteDoc(doc(db, "todos", toDelete.id));
-    setTodos(todos.filter((_, i)=> i !== index));
-    console.log("document deleted")
+    const updatedTodos = todos.filter((_, i) => i !== index);
+    setTodos(updatedTodos);
+    saveTodosToLocalStorage(updatedTodos);
+
+    try {
+      await deleteDoc(doc(db, "todos", toDelete.id));
+      console.log("Document deleted");
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      // Manejar el error si es necesario
+    }
   };
 
   const completeTodo = async (index) => {
-    const updatedTodo = {...todos[index], isComplete: !todos[index].isComplete};
-    await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo)
+    const updatedTodo = { ...todos[index], isComplete: !todos[index].isComplete };
     const newTodos = [...todos];
-    newTodos[index] = updatedTodo
+    newTodos[index] = updatedTodo;
     setTodos(newTodos);
-    console.log(`document updated, isComplete: ${newTodos[index].isComplete}`);
+    saveTodosToLocalStorage(newTodos);
+
+    try {
+      await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo);
+      console.log(`Document updated, isComplete: ${newTodos[index].isComplete}`);
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      // Manejar el error si es necesario
+    }
   };
 
   const editTodo = async (index, newText) => {
-    const updatedTodo = {...todos[index], text: newText};
-    await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo)
+    const updatedTodo = { ...todos[index], text: newText };
     const newTodos = [...todos];
-    newTodos[index] = updatedTodo
+    newTodos[index] = updatedTodo;
     setTodos(newTodos);
-    console.log(`document edited, ID: ${updatedTodo.id}`)
+    saveTodosToLocalStorage(newTodos);
+
+    try {
+      await updateDoc(doc(db, "todos", updatedTodo.id), updatedTodo);
+      console.log(`Document edited, ID: ${updatedTodo.id}`);
+    } catch (error) {
+      console.error("Error editing document: ", error);
+      // Manejar el error si es necesario
+    }
   };
 
   const [inputText, setInputText] = useState("");
