@@ -1,5 +1,5 @@
 // Nombre de la caché dinámica
-const CACHE_NAME = 'dynamic-v3';
+const CACHE_NAME = 'dynamic-v5';
 
 // Evento de instalación del Service Worker
 self.addEventListener('install', event => {
@@ -26,7 +26,11 @@ self.addEventListener('activate', event => {
 
 // Evento de interceptación de solicitudes
 self.addEventListener('fetch', event => {
-    if (event.request.method === 'GET') {
+    // Verifica si la solicitud es para Firebase Firestore o Firebase Authentication
+    const isFirebaseRequest = event.request.url.includes('firestore.googleapis.com') ||
+                              event.request.url.includes('identitytoolkit.googleapis.com');
+
+    if (event.request.method === 'GET' && !isFirebaseRequest) {
         event.respondWith(
             caches.match(event.request)
                 .then(cachedResponse => {
@@ -51,7 +55,7 @@ self.addEventListener('fetch', event => {
                 })
         );
     } else {
-        // Manejo para otros métodos (POST, PUT, etc.)
+        // Permite que las solicitudes a Firebase y otros métodos (POST, PUT, etc.) se manejen normalmente por el navegador
         event.respondWith(fetch(event.request));
     }
 });
